@@ -2,10 +2,16 @@ package com.jrockit.comunicacion;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.StrictMode;
+import android.provider.DocumentsContract;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -15,10 +21,16 @@ import android.widget.Toast;
 
 import org.w3c.dom.Text;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -29,7 +41,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
-    Button jbtnEnviar, jbtnDesconexion;
+    Button jbtnEnviar, jbtnDesconexion, jbtnArchivo;
     TextView jtvChat, jtvIp;
     EditText jetMensaje, jetIP;
 
@@ -37,6 +49,8 @@ public class MainActivity extends AppCompatActivity {
     ServerSocket ss;
     DataOutputStream dos;
     DataInputStream dis;
+
+    Uri ruta, inicio;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
         // Botones
         jbtnEnviar = (Button) findViewById(R.id.xbtnEnviar);
         jbtnDesconexion = (Button) findViewById(R.id.xbtnDesconexion);
+        jbtnArchivo = (Button) findViewById(R.id.xbtnArchivo);
 
         // TextView
         jtvChat = (TextView) findViewById(R.id.xtvChat);
@@ -61,6 +76,12 @@ public class MainActivity extends AppCompatActivity {
         // Hilo para el servidor
         Thread myThread = new Thread(new MiServidor());
         myThread.start();
+
+        // Obtenemos la ruta de la carpeta forensics
+        String path = Environment.getExternalStorageDirectory() + "/" + "forensics/";
+
+        // Lo convertimos a un uri que nos servira para abrir esa carpeta por defecto
+        inicio = Uri.parse(path);
 
         // Boton Enviar
         jbtnEnviar.setOnClickListener(new View.OnClickListener() {
@@ -98,6 +119,15 @@ public class MainActivity extends AppCompatActivity {
                 jetMensaje.setText("CHAT: ");
                 // Limpiamos la casilla de IP
                 jetIP.setText("");
+            }
+        });
+
+        // Boton Archivo
+        jbtnArchivo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Que abra directamente la carpeta de foreincs
+                openFile(inicio);
             }
         });
     }
@@ -183,5 +213,37 @@ public class MainActivity extends AppCompatActivity {
             Log.w("F", "Ex obteniendo valor de la IP" + e.getMessage());
         }
         return address;
+    }
+
+    // Request code for selecting a PDF document.
+    private static final int XML = 2;
+
+    // Seleccionamos el archivo .xml
+    private void openFile(Uri pickerInitialUri) {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        // Que sea cualquier tipo de archivo
+        intent.setType("*/*");
+
+        // Optionally, specify a URI for the file that should appear in the
+        // system file picker when it loads.
+        intent.putExtra(DocumentsContract.EXTRA_INITIAL_URI, pickerInitialUri);
+
+        startActivityForResult(intent, XML);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
+        //super.onActivityResult(requestCode, resultCode, resultData);
+        if (requestCode == XML && resultCode == Activity.RESULT_OK) {
+            // The result data contains a URI for the document or directory that
+            // the user selected.
+            ruta = null;
+            if (resultData != null) {
+                // Guardamos el uri del archivo seleccionado
+                ruta = resultData.getData();
+                // Perform operations on the document using its URI.
+            }
+        }
     }
 }

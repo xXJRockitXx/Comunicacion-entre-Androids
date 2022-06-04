@@ -48,6 +48,13 @@
         android:inputType="textPersonName" />
 
     <Button
+        android:id="@+id/xbtnArchivo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Archivo" />
+
+    <Button
         android:id="@+id/xbtnEnviar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
