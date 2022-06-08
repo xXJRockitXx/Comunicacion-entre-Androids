@@ -23,12 +23,17 @@ import org.w3c.dom.Text;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Inet4Address;
@@ -51,6 +56,11 @@ public class MainActivity extends AppCompatActivity {
     DataInputStream dis;
 
     Uri ruta, inicio;
+    File archivo;
+    FileReader fr;
+    FileWriter fw;
+    BufferedReader br;
+    BufferedWriter bw;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +99,10 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 // Agregamos conversacion al CHAT
                 jtvChat.append("\nTú: " + jetMensaje.getText().toString());
-                Toast.makeText(getApplicationContext(), "Mensaje Enviado", Toast.LENGTH_SHORT).show();
+                if (jetMensaje.getText().toString().contains(".")) {
+                    Toast.makeText(getApplicationContext(), "Archivo Enviado", Toast.LENGTH_SHORT).show();
+                } else
+                    Toast.makeText(getApplicationContext(), "Mensaje Enviado", Toast.LENGTH_SHORT).show();
 
                 BackgroundTask b = new BackgroundTask();
                 b.execute(jetIP.getText().toString(), jetMensaje.getText().toString());
@@ -116,7 +129,8 @@ public class MainActivity extends AppCompatActivity {
                 // Informamos Desconexion
                 Toast.makeText(getApplicationContext(), "Desconectado...", Toast.LENGTH_SHORT).show();
                 // Limpiamos casilla de Chat
-                jetMensaje.setText("CHAT: ");
+                jtvChat.setText("CHAT: ");
+                jetMensaje.setText("");
                 // Limpiamos la casilla de IP
                 jetIP.setText("");
             }
@@ -184,8 +198,15 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             // Agregamos conversacion al CHAT
+                            if (mensaje.contains(".")) {
+                                Toast.makeText(getApplicationContext(), "Archivo Recibido", Toast.LENGTH_SHORT).show();
+                                //jtvChat.append("\nAndroid: " + mensaje);
+                            } else {
+                                //jtvChat.append("\nAndroid: " + mensaje);
+                                Toast.makeText(getApplicationContext(), "Mensaje Recibido", Toast.LENGTH_SHORT).show();
+                            }
+
                             jtvChat.append("\nAndroid: " + mensaje);
-                            Toast.makeText(getApplicationContext(), "Mensaje Recibido", Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
@@ -242,7 +263,8 @@ public class MainActivity extends AppCompatActivity {
             if (resultData != null) {
                 // Guardamos el uri del archivo seleccionado
                 ruta = resultData.getData();
-                // Perform operations on the document using its URI.
+                archivo = new File(ruta.getPath());
+                jetMensaje.append("" + ruta.getPath());
             }
         }
     }
